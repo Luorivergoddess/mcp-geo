@@ -1,0 +1,40 @@
+{
+  "name": "@luorivergoddess/mcp-geo",
+  "version": "0.1.1",
+  "description": "MCP Server for generating precise geometric images using Asymptote.",
+  "main": "dist/server.js",
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "connect": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "nodemon --watch src --ext ts --exec ts-node src/server.ts",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mcp",
+    "asymptote",
+    "geometry",
+    "graphics",
+    "ai"
+  ],
+  "author": "luorivergoddess",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.1",
+    "json-rpc-2.0": "^1.7.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.46",
+    "@types/uuid": "^9.0.8",
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}

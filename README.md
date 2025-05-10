@@ -3,6 +3,10 @@
 An MCP (Model Context Protocol) server for generating precise geometric images using Asymptote.
 This server allows AI models compatible with MCP to request image generation by providing Asymptote code.
 
+<a href="https://glama.ai/mcp/servers/@Luorivergoddess/mcp-geo">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@Luorivergoddess/mcp-geo/badge" alt="Geometry Server MCP server" />
+</a>
+
 ## Prerequisites
 
 Before using this server, please ensure you have the following installed:

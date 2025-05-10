@@ -104,6 +104,11 @@ The server exposes one primary tool:
 }
 ```
 
+**Client Compatibility Notes:**
+
+*   Some MCP clients may have limitations on supported image MIME types.
+*   For instance, if you are using this server with a client that does not support `image/svg+xml` (e.g., certain versions or configurations of "Cherry Studio" as reported), please ensure you request the `png` format by including `"outputParams": { "format": "png" }` in your tool call arguments. The server defaults to `svg` if no format is specified.
+
 ## Author
 
 luorivergoddess

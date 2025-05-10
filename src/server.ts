@@ -50,14 +50,14 @@ const renderGeometricImageInputSchema = {
         format: { 
           type: 'string', 
           enum: ['svg', 'png'], 
-          description: 'The desired output image format. "svg" for scalable vector graphics (recommended for diagrams and plots), "png" for raster graphics. Defaults to "svg" if not specified.' 
+          description: 'The desired output image format. "svg" (default) produces scalable vector graphics, ideal for high-quality diagrams and plots. "png" produces raster graphics, which have broader compatibility with clients that may not support SVG directly (e.g., some versions of Cherry Studio). If targeting such clients, explicitly specify "png".' 
         },
         renderLevel: { 
           type: 'number', 
-          description: 'For PNG output only. Specifies the rendering quality (supersampling level for antialiasing). Higher values (e.g., 4 or 8) produce smoother images but take longer to render and result in larger files. Asymptote default is 2. This server defaults to 4 if not specified and format is "png". Ignored for SVG output.' 
+          description: 'For PNG output only. Specifies the rendering quality (supersampling level for antialiasing). Higher values (e.g., 4 or 8) produce smoother images but take longer to render and result in larger files. Asymptote\'s own default is 2. This server defaults to 4 if "png" format is chosen and renderLevel is not specified. Ignored for SVG output.' 
         }
       },
-      required: [] as string[],
+      required: [] as string[], // outputParams itself is optional
       additionalProperties: false,
     }
   },

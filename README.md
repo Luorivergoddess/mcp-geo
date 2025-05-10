@@ -63,19 +63,20 @@ The server exposes one primary tool:
       "properties": {
         "asyCode": {
           "type": "string",
-          "description": "The Asymptote code to execute."
+          "description": "A string containing complete and valid Asymptote code to be compiled. The server executes this code directly. Ensure necessary `import` statements (e.g., `import graph;`) and settings (e.g., `unitsize(1cm);`) are included within this code block if needed."
         },
         "outputParams": {
           "type": "object",
+          "description": "Optional parameters to control the output image.",
           "properties": {
             "format": {
               "type": "string",
               "enum": ["svg", "png"],
-              "description": "Output format (svg or png). Default: svg."
+              "description": "The desired output image format. \"svg\" for scalable vector graphics (recommended for diagrams and plots), \"png\" for raster graphics. Defaults to \"svg\" if not specified."
             },
             "renderLevel": {
               "type": "number",
-              "description": "Render level for PNG (e.g., 4 for 4x antialiasing). Default: 4."
+              "description": "For PNG output only. Specifies the rendering quality (supersampling level for antialiasing). Higher values (e.g., 4 or 8) produce smoother images but take longer to render and result in larger files. Asymptote default is 2. This server defaults to 4 if not specified and format is \"png\". Ignored for SVG output."
             }
           }
         }

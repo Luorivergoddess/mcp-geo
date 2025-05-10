@@ -7,7 +7,6 @@ import {
   ListToolsRequestSchema,
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
-// Assuming TextContent and ImageContent are the correct part types.
 import type { Tool, CallToolResult, ImageContent, TextContent } from '@modelcontextprotocol/sdk/types.js';
 
 import { spawn, exec } from 'child_process';
@@ -40,12 +39,23 @@ interface AsyToolArguments {
 const renderGeometricImageInputSchema = {
   type: 'object' as const,
   properties: {
-    asyCode: { type: 'string', description: 'The Asymptote code to execute.' },
+    asyCode: { 
+      type: 'string', 
+      description: 'A string containing complete and valid Asymptote code to be compiled. The server executes this code directly. Ensure necessary `import` statements (e.g., `import graph;`) and settings (e.g., `unitsize(1cm);`) are included within this code block if needed.' 
+    },
     outputParams: {
       type: 'object' as const,
+      description: 'Optional parameters to control the output image.',
       properties: {
-        format: { type: 'string', enum: ['svg', 'png'], description: 'Output format (svg or png). Default: svg.' },
-        renderLevel: { type: 'number', description: 'Render level for PNG (e.g., 4 for 4x antialiasing). Default: 4.' }
+        format: { 
+          type: 'string', 
+          enum: ['svg', 'png'], 
+          description: 'The desired output image format. "svg" for scalable vector graphics (recommended for diagrams and plots), "png" for raster graphics. Defaults to "svg" if not specified.' 
+        },
+        renderLevel: { 
+          type: 'number', 
+          description: 'For PNG output only. Specifies the rendering quality (supersampling level for antialiasing). Higher values (e.g., 4 or 8) produce smoother images but take longer to render and result in larger files. Asymptote default is 2. This server defaults to 4 if not specified and format is "png". Ignored for SVG output.' 
+        }
       },
       required: [] as string[],
       additionalProperties: false,
@@ -57,7 +67,7 @@ const renderGeometricImageInputSchema = {
 
 class AsyGeoServer {
   private server: Server;
-  private readonly serverVersion = "0.1.0"; 
+  private readonly serverVersion = "0.1.1"; 
 
   constructor() {
     this.server = new Server(
@@ -161,22 +171,28 @@ class AsyGeoServer {
       });
 
       if (processErrorStr) {
-        throw new McpError(ErrorCode.InternalError, processErrorStr, { logs });
+        const message = `Failed to start Asymptote process: ${processErrorStr}. Logs: ${logs.trim()}`;
+        throw new McpError(ErrorCode.InternalError, message, { originalError: processErrorStr, logs: logs.trim() });
       }
 
       if (exitCode !== 0) {
         logs += `[ASY EXIT CODE]: ${exitCode}\n`;
+        const message = `Asymptote process exited with code ${exitCode}. Output file not found. Logs: ${logs.trim()}`;
         try {
           await fs.access(actualOutputFilePath);
         } catch (e) {
-          throw new McpError(ErrorCode.InternalError, `Asymptote process exited with code ${exitCode}. Output file not found.`, { logs });
+          throw new McpError(ErrorCode.InternalError, message, { logs: logs.trim() });
         }
+        // If fs.access succeeded but we still consider it an error due to exitCode,
+        // this part might need refinement, but usually non-zero exit means failure.
+        // For now, if file exists, we proceed, but the log indicates an issue.
       }
       
       try {
         await fs.access(actualOutputFilePath);
       } catch (e) {
-        throw new McpError(ErrorCode.InternalError, `Asymptote process completed (exit code ${exitCode}), but output file ${baseOutputName}.${format} was not created.`, { logs });
+        const message = `Asymptote process completed (exit code ${exitCode}), but output file ${baseOutputName}.${format} was not created. Logs: ${logs.trim()}`;
+        throw new McpError(ErrorCode.InternalError, message, { logs: logs.trim() });
       }
 
       const imageBuffer = await fs.readFile(actualOutputFilePath);
@@ -185,10 +201,9 @@ class AsyGeoServer {
       const imageContent: ImageContent = {
         type: 'image',
         mimeType: `image/${format === 'svg' ? 'svg+xml' : format}`,
-        data: base64Data, // Changed 'base64' to 'data'
+        data: base64Data,
       };
       
-      // Use a more general type for the array if ContentPart is not directly available
       const contentParts: (ImageContent | TextContent)[] = [imageContent];
 
       if (logs && logs.trim() !== '') {
@@ -201,12 +216,19 @@ class AsyGeoServer {
       };
 
     } catch (error: any) {
-      logs += `[SERVER ERROR]: ${error.message}\n`;
+      const currentLogs = logs.trim();
+      let finalMessage = `Server error: ${error.message}`;
+      if (currentLogs) {
+        finalMessage += `. Logs: ${currentLogs}`;
+      }
+
       if (error instanceof McpError) {
         const errorData = error.data || {};
-        throw new McpError(error.code, error.message, { ...errorData, logs });
+        // Ensure message includes current logs if not already part of error.message
+        const combinedMessage = error.message.includes(currentLogs) ? error.message : `${error.message}. Current server logs: ${currentLogs}`;
+        throw new McpError(error.code, combinedMessage, { ...errorData, serverLogs: currentLogs });
       }
-      throw new McpError(ErrorCode.InternalError, `Server error: ${error.message}`, { logs });
+      throw new McpError(ErrorCode.InternalError, finalMessage, { serverLogs: currentLogs });
     } finally {
       fs.unlink(asyFilePath).catch(e => console.error(`Failed to delete temp file ${asyFilePath}:`, e));
       fs.unlink(actualOutputFilePath).catch(e => { /* ignore if file wasn't created */ });

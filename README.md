@@ -1,4 +1,5 @@
 # @luorivergoddess/mcp-geo
+[![smithery badge](https://smithery.ai/badge/@Luorivergoddess/mcp-geo)](https://smithery.ai/server/@Luorivergoddess/mcp-geo)
 
 An MCP (Model Context Protocol) server for generating precise geometric images using Asymptote.
 This server allows AI models compatible with MCP to request image generation by providing Asymptote code.
@@ -18,6 +19,15 @@ Before using this server, please ensure you have the following installed:
 
 ## Installation
 
+### Installing via Smithery
+
+To install Geometric Image Generator for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@Luorivergoddess/mcp-geo):
+
+```bash
+npx -y @smithery/cli install @Luorivergoddess/mcp-geo --client claude
+```
+
+### Installing Manually
 To install this package globally (if you intend to run `connect` command directly) or as a dependency in another project:
 
 ```bash
